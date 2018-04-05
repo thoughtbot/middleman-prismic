@@ -10,7 +10,6 @@ module Middleman
     end
 
     class Core < ::Middleman::Extension
-
       option :api_url, nil, 'The prismic api url'
       option :release, 'master', 'Content release'
       option(
@@ -27,19 +26,13 @@ module Middleman
       end
 
       helpers do
-        Dir["data/prismic_*"].each do |file|
-          define_method(file.gsub('data/prismic_','')) do
-            YAML::load(File.read(file)).values
-          end
-        end
-
         def reference
-          ref = YAML::load(File.read('data/prismic_reference'))
+          ref = YAML::load(File.read('data/prismic/reference.yml'))
           ref.class.send(
             :define_method, :link_to, Middleman::Prismic.options.link_resolver
           )
 
-          return ref
+          ref
         end
       end
     end

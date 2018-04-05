@@ -4,21 +4,14 @@ require 'fileutils'
 
 module Middleman
   module Cli
-
     class Prismic < Thor::Group
       # Path where Middleman expects the local data to be stored
-      MIDDLEMAN_LOCAL_DATA_FOLDER = 'data'
+      DATA_DIR = 'data'
 
       check_unknown_options!
 
       namespace :prismic
       desc 'Import data from Prismic'
-
-=begin
-      method_option "refetch",
-        aliases: "-r",
-        desc: "Refetches the data from Prismic"
-=end
 
       def self.source_root
         ENV['MM_ROOT']
@@ -30,45 +23,63 @@ module Middleman
       end
 
       def prismic
-        # ::Middleman::Application.server.inst
-        reference = Middleman::Prismic.options.release
+        create_directories
+        output_available_documents
+        output_references
+        output_custom_queries
+      end
 
-        Dir.mkdir('data') unless File.exists?('data')
+      private
 
-        Dir.mkdir('data/prismic') unless File.exists?('data/prismic')
-
-        FileUtils.rm_rf(Dir.glob('data/prismic_*'))
-
-        api = ::Prismic.api(Middleman::Prismic.options.api_url)
-        response = api.form('everything').submit(api.ref(reference))
-
-        available_documents = []
-        response.each {|d| available_documents << d.type}
-
-        available_documents.uniq!
-
-        available_documents.each do |document_type|
-          document_dir = "data/prismic/#{document_type.pluralize}"
-          Dir.mkdir(document_dir) unless File.exists?(document_dir)
-          File.delete(*Dir.glob("#{document_dir}/*.yml"))
-
-          documents = response.select{|d| d.type == document_type}
-
-          documents.each do |document|
-            File.open(File.join(document_dir, "#{document.id}.yml"), 'w') do |f|
-              f.write(document.to_yaml)
-            end
-          end
+      def create_directories
+        if File.exists?("#{DATA_DIR}/prismic")
+          FileUtils.rm_rf(Dir.glob("#{DATA_DIR}/prismic"))
         end
 
-        File.open('data/prismic/reference.yml', 'w') do |f|
+        Dir.mkdir("#{DATA_DIR}") unless File.exists?("#{DATA_DIR}")
+        Dir.mkdir("#{DATA_DIR}/prismic")
+      end
+
+      def output_available_documents
+        api_response.map(&:type).uniq.each do |document_type|
+          document_dir = "#{DATA_DIR}/prismic/#{document_type.pluralize}"
+          documents = api_response.select { |d| d.type == document_type }
+          write_collection(document_dir, documents)
+        end
+      end
+
+      def output_references
+        File.open("#{DATA_DIR}/prismic/reference.yml", "w") do |f|
           f.write(api.master_ref.to_yaml)
         end
+      end
 
-        Middleman::Prismic.options.custom_queries.each do |k, v|
-          response = api.form('everything').query(*v).submit(api.master_ref)
-          File.open("data/prismic/custom_#{k}.yml", 'w') do |f|
-            f.write(Hash[[*response.map.with_index]].invert.to_yaml)
+      def output_custom_queries
+        Middleman::Prismic.options.custom_queries.each do |key, value|
+          document_dir = "#{DATA_DIR}/prismic/custom_#{key}"
+          response = api.form("everything").query(*value).submit(api.master_ref)
+          write_collection(document_dir, response)
+        end
+      end
+
+      def api_response
+        @api_response ||= api.form('everything').submit(api_reference)
+      end
+
+      def api_reference
+        api.ref(Middleman::Prismic.options.release)
+      end
+
+      def api
+        @api ||= ::Prismic.api(Middleman::Prismic.options.api_url)
+      end
+
+      def write_collection(dir, collection)
+        Dir.mkdir(dir) unless File.exists?(dir)
+
+        collection.each do |item|
+          File.open(File.join(dir, "#{item.id}.yml"), 'w') do |file|
+            file.write(item.to_yaml)
           end
         end
       end

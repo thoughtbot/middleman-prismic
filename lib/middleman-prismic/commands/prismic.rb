@@ -35,6 +35,8 @@ module Middleman
 
         Dir.mkdir('data') unless File.exists?('data')
 
+        Dir.mkdir('data/prismic') unless File.exists?('data/prismic')
+
         FileUtils.rm_rf(Dir.glob('data/prismic_*'))
 
         api = ::Prismic.api(Middleman::Prismic.options.api_url)
@@ -46,19 +48,26 @@ module Middleman
         available_documents.uniq!
 
         available_documents.each do |document_type|
+          document_dir = "data/prismic/#{document_type.pluralize}"
+          Dir.mkdir(document_dir) unless File.exists?(document_dir)
+          File.delete(*Dir.glob("#{document_dir}/*.yml"))
+
           documents = response.select{|d| d.type == document_type}
-          File.open("data/prismic_#{document_type.pluralize}.yml", 'w') do |f|
-            f.write(Hash[[*documents.map.with_index]].invert.to_yaml)
+
+          documents.each do |document|
+            File.open(File.join(document_dir, "#{document.id}.yml"), 'w') do |f|
+              f.write(document.to_yaml)
+            end
           end
         end
 
-        File.open('data/prismic_reference.yml', 'w') do |f|
+        File.open('data/prismic/reference.yml', 'w') do |f|
           f.write(api.master_ref.to_yaml)
         end
 
         Middleman::Prismic.options.custom_queries.each do |k, v|
           response = api.form('everything').query(*v).submit(api.master_ref)
-          File.open("data/prismic_custom_#{k}.yml", 'w') do |f|
+          File.open("data/prismic/custom_#{k}.yml", 'w') do |f|
             f.write(Hash[[*response.map.with_index]].invert.to_yaml)
           end
         end

@@ -6,7 +6,7 @@ module Middleman
   module Cli
     class Prismic < Thor::Group
       # Path where Middleman expects the local data to be stored
-      DATA_DIR = 'data'
+      DATA_DIR = 'data/prismic'.freeze
 
       check_unknown_options!
 
@@ -32,32 +32,30 @@ module Middleman
       private
 
       def create_directories
-        if File.exists?("#{DATA_DIR}/prismic")
-          FileUtils.rm_rf(Dir.glob("#{DATA_DIR}/prismic"))
+        if File.exists?(DATA_DIR)
+          FileUtils.rm_rf(Dir.glob(DATA_DIR))
         end
 
-        Dir.mkdir("#{DATA_DIR}") unless File.exists?("#{DATA_DIR}")
-        Dir.mkdir("#{DATA_DIR}/prismic")
+        FileUtils.mkdir_p(DATA_DIR)
       end
 
       def output_available_documents
-        api_response.map(&:type).uniq.each do |document_type|
-          document_dir = "#{DATA_DIR}/prismic/#{document_type.pluralize}"
-          documents = api_response.select { |d| d.type == document_type }
+        api_response.group_by(&:type).each do |document_type, documents|
+          document_dir = File.join(DATA_DIR, document_type.pluralize)
           write_collection(document_dir, documents)
         end
       end
 
       def output_references
-        File.open("#{DATA_DIR}/prismic/reference.yml", "w") do |f|
+        File.open(File.join(DATA_DIR, 'reference.yml'), 'w') do |f|
           f.write(api.master_ref.to_yaml)
         end
       end
 
       def output_custom_queries
         Middleman::Prismic.options.custom_queries.each do |key, value|
-          document_dir = "#{DATA_DIR}/prismic/custom_#{key}"
-          response = api.form("everything").query(*value).submit(api.master_ref)
+          document_dir = File.join(DATA_DIR, "custom_#{key}")
+          response = api.form('everything').query(*value).submit(api.master_ref)
           write_collection(document_dir, response)
         end
       end
@@ -75,7 +73,7 @@ module Middleman
       end
 
       def write_collection(dir, collection)
-        Dir.mkdir(dir) unless File.exists?(dir)
+        FileUtils.mkdir_p(dir)
 
         collection.each do |item|
           File.open(File.join(dir, "#{item.id}.yml"), 'w') do |file|

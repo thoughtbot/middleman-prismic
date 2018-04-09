@@ -10,7 +10,7 @@ module Middleman
     end
 
     class Core < ::Middleman::Extension
-      option :api_url, nil, 'The prismic api url'
+      option :api_url, nil, 'The Prismic API URL'
       option :release, 'master', 'Content release'
       option(
         :link_resolver,

@@ -40,10 +40,19 @@ module Middleman
       end
 
       def output_available_documents
-        api_response.group_by(&:type).each do |document_type, documents|
-          document_dir = File.join(DATA_DIR, document_type.pluralize)
-          write_collection(document_dir, documents)
-        end
+        page = 0
+
+        begin
+          page += 1
+          form = api_form
+          form.page(page)
+          response = api_response(form)
+
+          response.group_by(&:type).each do |document_type, documents|
+            document_dir = File.join(DATA_DIR, document_type.pluralize)
+            write_collection(document_dir, documents)
+          end
+        end while page < response.total_pages
       end
 
       def output_references
@@ -60,8 +69,12 @@ module Middleman
         end
       end
 
-      def api_response
-        @api_response ||= api.form('everything').submit(api_reference)
+      def api_response(form)
+        form.submit(api_reference)
+      end
+
+      def api_form
+        @api_form ||= api.form('everything')
       end
 
       def api_reference

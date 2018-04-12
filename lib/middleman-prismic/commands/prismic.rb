@@ -24,7 +24,7 @@ module Middleman
 
       def prismic
         create_directories
-        output_available_documents
+        paginate_available_documents
         output_references
         output_custom_queries
       end
@@ -39,20 +39,23 @@ module Middleman
         FileUtils.mkdir_p(DATA_DIR)
       end
 
-      def output_available_documents
+      def paginate_available_documents
         page = 0
 
         begin
           page += 1
-          form = api_form
-          form.page(page)
-          response = api_response(form)
+          api_form.page(page)
+          response = api_response(api_form)
 
-          response.group_by(&:type).each do |document_type, documents|
-            document_dir = File.join(DATA_DIR, document_type.pluralize)
-            write_collection(document_dir, documents)
-          end
+          output_available_documents(response)
         end while page < response.total_pages
+      end
+
+      def output_available_documents(response)
+        response.group_by(&:type).each do |document_type, documents|
+          document_dir = File.join(DATA_DIR, document_type.pluralize)
+          write_collection(document_dir, documents)
+        end
       end
 
       def output_references

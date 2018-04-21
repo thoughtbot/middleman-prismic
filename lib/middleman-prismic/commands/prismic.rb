@@ -85,7 +85,7 @@ module Middleman
       end
 
       def api
-        @api ||= ::Prismic.api(Middleman::Prismic.options.api_url)
+        @api ||= ::Prismic.api(Middleman::Prismic.options.api_url, Middleman::Prismic.options.access_token)
       end
 
       def write_collection(dir, collection)

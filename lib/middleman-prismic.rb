@@ -12,6 +12,7 @@ module Middleman
     class Core < ::Middleman::Extension
       option :api_url, nil, 'The Prismic API URL'
       option :release, 'master', 'Content release'
+      option :access_token, nil, 'Access token (optional)'
       option(
         :link_resolver,
         ->(link) {"http://www.example.com/#{link.type.pluralize}/#{link.slug}"},

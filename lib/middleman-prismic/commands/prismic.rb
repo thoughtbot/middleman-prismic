@@ -1,6 +1,7 @@
 require 'middleman-core/cli'
 require 'yaml'
 require 'fileutils'
+require 'digest'
 
 module Middleman
   module Cli
@@ -92,9 +93,12 @@ module Middleman
         FileUtils.mkdir_p(dir)
 
         collection.each do |item|
-          File.open(File.join(dir, "#{item.id}.yml"), 'w') do |file|
-            file.write(item.to_yaml)
-          end
+          filename = "#{Digest::MD5.hexdigest(item.id)}.yml"
+
+          File.write(
+            File.join(dir, filename),
+            item.to_yaml
+          )
         end
       end
 

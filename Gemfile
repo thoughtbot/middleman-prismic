@@ -1,16 +1,14 @@
-# If you do not have OpenSSL installed, update
-# the following line to use "http://" instead
-source 'https://rubygems.org'
+source "https://rubygems.org"
 
-# Specify your gem's dependencies in test-extension.gemspec
 gemspec
 
 group :development do
-  gem 'rake'
-  gem 'rdoc'
-  gem 'yard'
+  gem "rake"
+  gem "rdoc"
+  gem "yard"
+  gem "middleman"
 end
 
 group :test do
-  gem 'rspec'
+  gem "rspec"
 end

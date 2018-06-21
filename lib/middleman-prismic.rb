@@ -1,7 +1,7 @@
-require 'prismic'
-require 'middleman-core'
-require 'middleman-prismic/version'
-require 'middleman-prismic/commands/prismic'
+require "prismic"
+require "middleman-core"
+require "middleman-prismic/version"
+require "middleman-prismic/commands/prismic"
 
 module Middleman
   module Prismic

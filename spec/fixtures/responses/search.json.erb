@@ -1,0 +1,61 @@
+{
+  "page": 1,
+  "results_per_page": 20,
+  "results_size": 1,
+  "total_results_size": 1,
+  "total_pages": 1,
+  "next_page": null,
+  "prev_page": null,
+  "results": [
+    {
+      "id": "<%= document.id %>",
+      "uid": "<%= document.type %>",
+      "type": "<%= document.type %>",
+      "href": "<%= uri('/documents/search?ref=refref') %>",
+      "tags": [],
+      "first_publication_date": "2018-04-09T17:21:43+0000",
+      "last_publication_date": "2018-04-09T17:21:43+0000",
+      "slugs": [
+        "demo-test"
+      ],
+      "linked_documents": [],
+      "lang": "en-us",
+      "alternate_languages": [],
+      "data": {
+        "press_release": {
+          "date": {
+            "type": "Date",
+            "value": "2015-01-14"
+          },
+          "title": {
+            "type": "StructuredText",
+            "value": [
+              {
+                "type": "heading1",
+                "text": "A very good test heading",
+                "spans": []
+              }
+            ]
+          },
+          "body": {
+            "type": "StructuredText",
+            "value": [
+              {
+                "type": "paragraph",
+                "text": "A paragraph with some very strong text",
+                "spans": [
+                  {
+                    "start": 0,
+                    "end": 29,
+                    "type": "strong"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "version": "version"
+}

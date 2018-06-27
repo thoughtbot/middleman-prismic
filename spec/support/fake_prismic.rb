@@ -4,12 +4,14 @@ require "json"
 require "ostruct"
 
 class FakePrismic < Sinatra::Base
+  MASTER_REF = "MasterRef"
+
   set :views, Proc.new { File.expand_path("../../fixtures/responses/", __FILE__) }
 
   @@document = nil
 
-  def self.set_document(id:, type:)
-    @@document = OpenStruct.new(id: id, type: type)
+  def self.set_document(id:, type:, ref: MASTER_REF)
+    @@document = OpenStruct.new(id: id, type: type, ref: ref)
   end
 
   def self.reset
@@ -21,7 +23,9 @@ class FakePrismic < Sinatra::Base
   end
 
   get "/documents/search" do
-    erb "search.json".to_sym, locals: { document: @@document }
+    if @@document.ref == params["ref"]
+      erb "search.json".to_sym, locals: { document: @@document }
+    end
   end
 end
 

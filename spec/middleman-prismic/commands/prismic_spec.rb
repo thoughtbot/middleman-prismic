@@ -71,6 +71,18 @@ describe Middleman::Cli::Prismic do
         to have_received(:query).
           with(prismic_query)
     end
+
+    it "downloads via prismic ref" do
+      stub_options
+      response = double("response", group_by: [], total_pages: 1)
+      reference = "reference"
+      api_form = stub_prismic_api(response)
+      allow(api_form).to receive(:submit).and_return(response)
+
+      described_class.new([], ref: reference).prismic
+
+      expect(api_form).to have_received(:submit).with(reference)
+    end
   end
 
   def stub_options(hash = {})

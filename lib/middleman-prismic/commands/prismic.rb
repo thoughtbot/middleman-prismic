@@ -9,6 +9,12 @@ module Middleman
       # Path where Middleman expects the local data to be stored
       DATA_DIR = 'data/prismic'.freeze
 
+      class_option(
+        :ref,
+        type: :string,
+        desc: "Pull content from Prismic by ref instead of configured release",
+      )
+
       check_unknown_options!
 
       namespace :prismic
@@ -82,7 +88,7 @@ module Middleman
       end
 
       def api_reference
-        api.ref(Middleman::Prismic.options.release)
+        options[:ref] || api.ref(Middleman::Prismic.options.release)
       end
 
       def api

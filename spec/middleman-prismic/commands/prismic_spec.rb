@@ -86,15 +86,14 @@ describe Middleman::Cli::Prismic do
   end
 
   def stub_options(hash = {})
-    options = double(
-      "options",
-      {
-        access_token: nil,
-        api_url: "http://example.com",
-        release: "release",
-        custom_queries: [],
-      }.merge(hash)
-    )
+    options_hash = {
+      access_token: nil,
+      api_url: "http://example.com",
+      custom_queries: [],
+      release: "release",
+    }.merge(hash)
+    options = double("options", options_hash)
+    allow(options).to receive(:to_h).and_return(options_hash)
     allow(Middleman::Prismic).to receive(:options).and_return(options)
   end
 

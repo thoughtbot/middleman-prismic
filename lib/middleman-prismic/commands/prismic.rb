@@ -1,7 +1,8 @@
-require 'middleman-core/cli'
-require 'yaml'
-require 'fileutils'
-require 'digest'
+require "middleman-core/cli"
+require "middleman-prismic/connection"
+require "yaml"
+require "fileutils"
+require "digest"
 
 module Middleman
   module Cli
@@ -38,6 +39,15 @@ module Middleman
 
       private
 
+      def prismic_connection
+        @_prismic_connection ||=
+          Middleman::Prismic::Connection.new(combined_prismic_options)
+      end
+
+      def combined_prismic_options
+        Middleman::Prismic.options.to_h.merge(options)
+      end
+
       def create_directories
         if File.exists?(DATA_DIR)
           FileUtils.rm_rf(Dir.glob(DATA_DIR))
@@ -47,15 +57,9 @@ module Middleman
       end
 
       def paginate_available_documents
-        page = 0
-
-        begin
-          page += 1
-          api_form.page(page)
-          response = api_response(api_form)
-
+        prismic_connection.documents do |response|
           output_available_documents(response)
-        end while page < response.total_pages
+        end
       end
 
       def output_available_documents(response)
@@ -67,32 +71,15 @@ module Middleman
 
       def output_references
         File.open(File.join(DATA_DIR, 'reference.yml'), 'w') do |f|
-          f.write(api.master_ref.to_yaml)
+          f.write(prismic_connection.master_ref_yaml)
         end
       end
 
       def output_custom_queries
-        Middleman::Prismic.options.custom_queries.each do |key, value|
-          document_dir = File.join(DATA_DIR, "custom_#{key}")
-          response = api.form('everything').query(*value).submit(api.master_ref)
+        prismic_connection.run_custom_queries do |name, response|
+          document_dir = File.join(DATA_DIR, "custom_#{name}")
           write_collection(document_dir, response)
         end
-      end
-
-      def api_response(form)
-        form.submit(api_reference)
-      end
-
-      def api_form
-        @api_form ||= api.form('everything')
-      end
-
-      def api_reference
-        options[:ref] || api.ref(Middleman::Prismic.options.release)
-      end
-
-      def api
-        @api ||= ::Prismic.api(Middleman::Prismic.options.api_url, Middleman::Prismic.options.access_token)
       end
 
       def write_collection(dir, collection)

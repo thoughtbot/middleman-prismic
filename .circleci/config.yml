@@ -1,0 +1,32 @@
+base_job: &base_job
+  working_directory: ~/middleman-prismic
+  steps:
+    - checkout
+    - run:
+        name: Setup environment
+        command: ./bin/setup
+    - run:
+        name: Run tests
+        command: bundle exec rake
+
+jobs:
+  ruby2.3:
+    <<: *base_job
+    docker:
+      - image: circleci/ruby:2.3
+  ruby2.4:
+    <<: *base_job
+    docker:
+      - image: circleci/ruby:2.4
+  ruby2.5:
+    <<: *base_job
+    docker:
+      - image: circleci/ruby:2.5
+
+workflows:
+  version: 2
+  ruby-versions:
+    jobs:
+      - ruby2.3
+      - ruby2.4
+      - ruby2.5

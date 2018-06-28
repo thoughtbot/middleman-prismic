@@ -16,7 +16,7 @@ And then execute:
 Or install it yourself as:
 
     $ gem install middleman-prismic
-i
+
 ## Configuration
 
 To configure the extension, add the following configuration block to Middleman's config.rb:
@@ -54,9 +54,32 @@ For instance for articles, if you run `<%= articles %>` you get back a `Prismic:
 
 If at any time need access to `Prismic::Ref` you can do it using the `reference` helper.
 
+## Prismic Preview
+
+Prismic supports a preview function by sending a browser to `/preview`
+with a `token` and `document_id` on the query. This middleware is intended
+to hook into Middleman to add a `/preview` endpoint that will fetch the
+preview content by token (as `ref`) and display the content in the Middleman
+server.
+
+In your Middleman app, add the following to `config.rb` to activate
+this middleware:
+
+```ruby
+require "middleman-prismic/preview"
+
+use Middleman::Prismic::Preview
+```
+
+Now when running the `middleman` server, any requests to `/preview` will be
+intercepted. The `token` param will be read and used to execute
+`middleman prismic --ref ${token}`. Because Middleman is running as a
+server, when the content from Prismic is downloaded, it will show the
+live content when browsing the Middleman site.
+
 ## Development
 
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `bin/console` for an interactive prompt that will allow you to experiment. 
+After checking out the repo, run `bin/setup` to install dependencies. Then, run `bin/console` for an interactive prompt that will allow you to experiment.
 
 To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release` to create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
 

@@ -13,11 +13,7 @@ module Middleman
       option :api_url, nil, 'The Prismic API URL'
       option :release, 'master', 'Content release'
       option :access_token, nil, 'Access token (optional)'
-      option(
-        :link_resolver,
-        ->(link) {"http://www.example.com/#{link.type.pluralize}/#{link.slug}"},
-        'The link resolver'
-      )
+      option :link_resolver, ->(_link) {"/"}, 'The link resolver'
       option :custom_queries, {}, 'Custom queries'
 
       def initialize(app, options_hash={}, &block)

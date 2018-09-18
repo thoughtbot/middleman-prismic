@@ -68,7 +68,9 @@ this middleware:
 ```ruby
 require "middleman-prismic/preview"
 
-use Middleman::Prismic::Preview
+use Middleman::Prismic::Preview,
+  app_url: 'https://mysite.prismic.io/api',
+  link_resolver: link_resolver
 ```
 
 Now when running the `middleman` server, any requests to `/preview` will be

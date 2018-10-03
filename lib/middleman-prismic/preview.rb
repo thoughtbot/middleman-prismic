@@ -1,3 +1,5 @@
+require "open3"
+
 module Middleman
   module Prismic
     class Preview
@@ -11,11 +13,20 @@ module Middleman
         if req.path =~ %r(^/preview)
           token = req.params["token"]
 
-          succeeded = Kernel.system 'middleman', 'prismic', '--ref', token
-          if succeeded
-            [302, {'Location' => preview_url(token)}, ['Found']]
-          else
-            [500, {'Location' => '/?error=preview_failure'}, ['Error']]
+          begin
+            stdout_and_stderr, status = Open3.capture2e('middleman', 'prismic', '--ref', token)
+
+            if status.success?
+              [302, {'Location' => preview_url(token)}, ['Found']]
+            else
+              [500, {'Location' => '/?error=preview_failure'}, [stdout_and_stderr]]
+            end
+          rescue Exception => e
+            [
+              500,
+              {'Location' => '/?error=preview_failue'},
+              [e.message, "\n\t#{e.backtrace.join("\n\t")}" ]
+            ]
           end
         else
           @app.call(env)

@@ -1,5 +1,6 @@
 require "spec_helper"
 require "middleman-prismic/preview"
+require "open3"
 
 describe Middleman::Prismic::Preview do
   it "passes through requests outside of /preview" do
@@ -11,7 +12,7 @@ describe Middleman::Prismic::Preview do
     middleware = Middleman::Prismic::Preview.new(app)
     response = middleware.call request
 
-    expect(Kernel).not_to have_received(:system)
+    expect(Open3).not_to have_received(:capture2e)
     expect(app).to have_received(:call).with(request)
     expect(response).to be expected_response
   end
@@ -37,7 +38,7 @@ describe Middleman::Prismic::Preview do
       middleware = Middleman::Prismic::Preview.new(app)
       code, headers, message = middleware.call request
 
-      expect(Kernel).to have_received(:system).
+      expect(Open3).to have_received(:capture2e).
         with("middleman", "prismic", "--ref", "foo bar token")
       expect(message).to respond_to(:each)
     end
@@ -66,7 +67,7 @@ describe Middleman::Prismic::Preview do
 
     context "when the request fails" do
       it "returns a 500" do
-        stub_system(exit_status: false)
+        stub_system(success: false)
         app = rack_app
         request = env_for("http://example.com/preview")
 
@@ -88,7 +89,11 @@ describe Middleman::Prismic::Preview do
     Rack::MockRequest.env_for(url)
   end
 
-  def stub_system(exit_status: true)
-    allow(Kernel).to receive(:system).and_return(exit_status)
+  def stub_system(success: true)
+    stdout_and_stderr = ""
+    exit_status = double(:exit_status, success?: success)
+    allow(Open3).to receive(:capture2e).and_return(
+      [stdout_and_stderr, exit_status]
+    )
   end
 end

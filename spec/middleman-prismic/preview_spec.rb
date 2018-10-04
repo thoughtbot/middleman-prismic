@@ -47,9 +47,9 @@ describe Middleman::Prismic::Preview do
       stub_system
       app = rack_app
       request = env_for("http://example.com/preview?token=foo%20bar%20token")
-      api_url = 'http://prismic.url'
+      api_url = "http://prismic.url"
       link_resolver = double(:link_resolver)
-      prismic_spy = spy(Prismic, preview_session: '/foobar')
+      prismic_spy = spy(Prismic, preview_session: "/foobar")
       allow(Prismic).to receive(:api) { prismic_spy }
 
       middleware = Middleman::Prismic::Preview.new(
@@ -62,7 +62,7 @@ describe Middleman::Prismic::Preview do
       expect(Prismic).to have_received(:api).with(api_url)
       expect(prismic_spy).to have_received(:preview_session)
       expect(code).to eq 302
-      expect(headers).to include 'Location' => '/foobar'
+      expect(headers).to include "Location" => "/foobar"
     end
 
     context "when the request fails" do
